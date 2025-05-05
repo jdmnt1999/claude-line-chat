@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div class="app-container">
+    <div id="app" class="app-container">
         <div class="sidebar">
             <div class="sidebar-header">
                 <h1>Claude LINE Chat</h1>
@@ -83,6 +83,8 @@
                         <option value="claude-3-opus-20240229">Claude 3 Opus</option>
                         <option value="claude-3-sonnet-20240229">Claude 3 Sonnet</option>
                         <option value="claude-3-haiku-20240307">Claude 3 Haiku</option>
+                        <option value="claude-3.5-sonnet-20240620">Claude 3.5 Sonnet</option>
+                        <option value="claude-3.7-sonnet-20250219">Claude 3.7 Sonnet</option>
                     </select>
                 </div>
                 <div class="setting-group">
@@ -121,7 +123,7 @@
         </div>
     </div>
 
-    <!-- JavaScript -->
+    <!-- JavaScript - 非モジュールスクリプト -->
     <script src="js/config.js"></script>
     <script src="js/cors-proxy.js"></script>
     <script src="js/db-storage.js"></script>
@@ -131,6 +133,9 @@
     <script src="js/parser.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/claude-line-fixer.js"></script>
+    
+    <!-- Vue.js & ESモジュール -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script type="module" src="js/main.js"></script>
 </body>
 </html>
