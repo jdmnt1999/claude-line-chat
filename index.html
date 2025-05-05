@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude LINE Chat</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/line-theme.css">
+    <!-- LINE風アイコンのためのFont Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h1>Claude LINE Chat</h1>
+                <div class="file-controls">
+                    <button id="load-log-btn" class="line-btn">
+                        <i class="fas fa-folder-open"></i> ログ読込
+                    </button>
+                    <input type="file" id="log-file-input" accept=".html,.json,.txt" style="display: none;">
+                    <button id="settings-btn" class="line-btn">
+                        <i class="fas fa-cog"></i> 設定
+                    </button>
+                </div>
+            </div>
+            <div class="conversation-list-container">
+                <div class="conversation-filter">
+                    <input type="text" id="conversation-search" placeholder="会話を検索...">
+                </div>
+                <div id="conversation-list" class="conversation-list">
+                    <!-- 会話リストはJSで動的に生成 -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="chat-container">
+                <div class="chat-header">
+                    <div class="chat-title">
+                        <span id="current-conversation-title">新しい会話</span>
+                        <button id="edit-title-btn" class="icon-btn">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </div>
+                    <div class="chat-controls">
+                        <button id="export-btn" class="line-btn">
+                            <i class="fas fa-download"></i> エクスポート
+                        </button>
+                        <button id="clear-btn" class="line-btn">
+                            <i class="fas fa-trash"></i> クリア
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="message-container" class="message-container">
+                    <!-- メッセージはJSで動的に生成 -->
+                </div>
+                
+                <div class="message-input-container">
+                    <textarea id="message-input" placeholder="メッセージを入力..."></textarea>
+                    <button id="send-message-btn" class="line-btn">
+                        <i class="fas fa-paper-plane"></i> 送信
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- モーダルダイアログ -->
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>設定</h2>
+            <div class="settings-form">
+                <div class="setting-group">
+                    <label for="api-key">Claude API Key:</label>
+                    <input type="password" id="api-key" placeholder="sk-xxxxxxxxxxxxxxxxxxxxxxxx">
+                </div>
+                <div class="setting-group">
+                    <label for="model-selection">モデル:</label>
+                    <select id="model-selection">
+                        <option value="claude-3-opus-20240229">Claude 3 Opus</option>
+                        <option value="claude-3-sonnet-20240229">Claude 3 Sonnet</option>
+                        <option value="claude-3-haiku-20240307">Claude 3 Haiku</option>
+                    </select>
+                </div>
+                <div class="setting-group">
+                    <label>テーマ:</label>
+                    <div class="theme-options">
+                        <button class="theme-btn" data-theme="light">ライト</button>
+                        <button class="theme-btn" data-theme="dark">ダーク</button>
+                    </div>
+                </div>
+                <div class="setting-group">
+                    <label for="log-directory">Claudeログディレクトリ:</label>
+                    <input type="text" id="log-directory" placeholder="例: E:/Desktop/ClaudeCode/claude-line">
+                    <button id="browse-directory-btn" class="line-btn">参照...</button>
+                </div>
+                <button id="save-settings-btn" class="line-btn primary">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="file-browser-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>ファイル選択</h2>
+            <div class="file-browser">
+                <div class="current-path">
+                    <span id="current-directory-path">未選択</span>
+                </div>
+                <div id="file-list" class="file-list">
+                    <!-- ファイルリストはJSで動的に生成 -->
+                </div>
+            </div>
+            <div class="file-browser-controls">
+                <button id="select-file-btn" class="line-btn primary">選択</button>
+                <button id="cancel-file-selection-btn" class="line-btn">キャンセル</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="js/config.js"></script>
+    <script src="js/cors-proxy.js"></script>
+    <script src="js/db-storage.js"></script>
+    <script src="js/enhanced-db-storage.js"></script>
+    <script src="js/file-helper.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/parser.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/claude-line-fixer.js"></script>
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
