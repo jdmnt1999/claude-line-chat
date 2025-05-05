@@ -1,0 +1,344 @@
+/* LINE風デザインテーマ */
+
+/* 共通カラー変数 */
+:root {
+    --line-green: #00B900;
+    --line-light-green: #e5f7e5;
+    --line-dark-green: #009900;
+    --line-gray: #888888;
+    --line-light-gray: #f5f5f5;
+    --line-border: #e0e0e0;
+    --line-white: #ffffff;
+    --line-black: #333333;
+    --line-chat-bg: #f5f5f5;
+    --line-user-msg: #00B900;
+    --line-bot-msg: #ffffff;
+}
+
+/* ダークテーマ */
+body.dark-theme {
+    --line-green: #00B900;
+    --line-light-green: #004d00;
+    --line-dark-green: #00a000;
+    --line-gray: #aaaaaa;
+    --line-light-gray: #2a2a2a;
+    --line-border: #444444;
+    --line-white: #222222;
+    --line-black: #e0e0e0;
+    --line-chat-bg: #1a1a1a;
+    --line-user-msg: #00B900;
+    --line-bot-msg: #333333;
+}
+
+/* LINE風のアプリコンテナ */
+.app-container {
+    background-color: var(--line-white);
+}
+
+/* LINE風のサイドバー */
+.sidebar {
+    background-color: var(--line-white);
+    border-right: 1px solid var(--line-border);
+}
+
+.sidebar-header h1 {
+    color: var(--line-green);
+}
+
+/* LINE風の会話リスト */
+.conversation-item {
+    border-radius: 8px;
+    padding: 12px;
+    border-left: 3px solid transparent;
+    background-color: var(--line-light-gray);
+}
+
+.conversation-item:hover {
+    background-color: var(--line-light-green);
+}
+
+.conversation-item.active {
+    background-color: var(--line-light-green);
+    border-left: 3px solid var(--line-green);
+}
+
+/* LINE風のメッセージスタイル */
+.message-container {
+    background-color: var(--line-chat-bg);
+}
+
+.message-content {
+    border-radius: 15px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    word-break: break-word;
+    line-height: 1.5;
+}
+
+.user-message .message-content {
+    background-color: var(--line-user-msg);
+    color: white;
+    border-top-right-radius: 2px;
+    margin-right: 6px;
+}
+
+.claude-message .message-content {
+    background-color: var(--line-bot-msg);
+    color: var(--line-black);
+    border-top-left-radius: 2px;
+    margin-left: 6px;
+    max-width: 85%;
+}
+
+/* LINE風のアバター */
+.message-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    background-color: var(--line-light-gray);
+}
+
+.claude-avatar {
+    background-color: var(--line-green);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+/* LINE風のボタン */
+.line-btn {
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    border: 1px solid var(--line-border);
+    background-color: var(--line-light-gray);
+    transition: all 0.2s ease;
+}
+
+.line-btn:hover {
+    background-color: var(--line-border);
+}
+
+.line-btn.primary {
+    background-color: var(--line-green);
+    color: white;
+    border: none;
+}
+
+.line-btn.primary:hover {
+    background-color: var(--line-dark-green);
+}
+
+/* LINE風の入力エリア */
+.message-input-container {
+    background-color: var(--line-white);
+    padding: 10px 15px;
+}
+
+#message-input {
+    border-radius: 20px;
+    padding: 10px 15px;
+    border: 1px solid var(--line-border);
+    background-color: var(--line-light-gray);
+    resize: none;
+    min-height: 40px;
+    max-height: 200px;
+    transition: all 0.2s ease;
+}
+
+#message-input:focus {
+    border-color: var(--line-green);
+}
+
+#send-message-btn {
+    background-color: var(--line-green);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#send-message-btn:hover {
+    background-color: var(--line-dark-green);
+}
+
+/* LINE風のモーダル */
+.modal-content {
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* LINE風のフォームコントロール */
+.setting-group input, 
+.setting-group select {
+    border-radius: 8px;
+    padding: 10px 12px;
+}
+
+.setting-group input:focus, 
+.setting-group select:focus {
+    border-color: var(--line-green);
+}
+
+/* マークダウンのコードブロック */
+pre {
+    background-color: #f8f8f8;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+    padding: 12px;
+    overflow-x: auto;
+    margin: 10px 0;
+}
+
+code {
+    font-family: 'Source Code Pro', 'Menlo', monospace;
+    font-size: 0.9em;
+}
+
+/* マークダウンインライン要素 */
+strong {
+    font-weight: bold;
+}
+
+em {
+    font-style: italic;
+}
+
+a {
+    color: var(--line-green);
+    text-decoration: underline;
+}
+
+/* マークダウンリスト */
+ul, ol {
+    padding-left: 25px;
+    margin: 10px 0;
+}
+
+li {
+    margin-bottom: 5px;
+}
+
+/* マークダウンの引用 */
+blockquote {
+    border-left: 3px solid var(--line-green);
+    padding-left: 15px;
+    margin: 10px 0;
+    color: var(--line-gray);
+}
+
+/* マークダウンテーブル */
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 15px 0;
+}
+
+th, td {
+    border: 1px solid var(--line-border);
+    padding: 8px 12px;
+    text-align: left;
+}
+
+th {
+    background-color: var(--line-light-gray);
+    font-weight: bold;
+}
+
+/* 画像サイズ調整 */
+img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 5px;
+    margin: 10px 0;
+}
+
+/* ダークモード追加スタイル */
+body.dark-theme {
+    background-color: var(--line-chat-bg);
+    color: var(--line-black);
+}
+
+body.dark-theme .app-container,
+body.dark-theme .sidebar,
+body.dark-theme .message-input-container,
+body.dark-theme .chat-header {
+    background-color: var(--line-white);
+}
+
+body.dark-theme .chat-container {
+    background-color: var(--line-chat-bg);
+}
+
+body.dark-theme .message-content {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-theme pre {
+    background-color: #333;
+    border-color: #444;
+}
+
+body.dark-theme code {
+    color: #e0e0e0;
+}
+
+/* トースト通知 */
+.toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: var(--line-white);
+    color: var(--line-black);
+    padding: 12px 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.toast.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.toast.success {
+    border-left: 4px solid var(--line-green);
+}
+
+.toast.error {
+    border-left: 4px solid #ff4d4d;
+}
+
+.toast.warning {
+    border-left: 4px solid #ffcc00;
+}
+
+.toast i {
+    font-size: 1.2rem;
+}
+
+.toast.success i {
+    color: var(--line-green);
+}
+
+.toast.error i {
+    color: #ff4d4d;
+}
+
+.toast.warning i {
+    color: #ffcc00;
+}
