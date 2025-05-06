@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Claude LINE Chat</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/line-theme.css">
+    <link rel="stylesheet" href="./css/style.css">
+    <link rel="stylesheet" href="./css/line-theme.css">
     <!-- LINE風アイコンのためのFont Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -124,18 +124,127 @@
     </div>
 
     <!-- JavaScript - 非モジュールスクリプト -->
-    <script src="js/config.js"></script>
-    <script src="js/cors-proxy.js"></script>
-    <script src="js/db-storage.js"></script>
-    <script src="js/enhanced-db-storage.js"></script>
-    <script src="js/file-helper.js"></script>
-    <script src="js/api.js"></script>
-    <script src="js/parser.js"></script>
-    <script src="js/ui.js"></script>
-    <script src="js/claude-line-fixer.js"></script>
+    <script src="./js/config.js"></script>
+    <script src="./js/cors-proxy.js"></script>
+    <script src="./js/db-storage.js"></script>
+    <script src="./js/enhanced-db-storage.js"></script>
+    <script src="./js/file-helper.js"></script>
+    <script src="./js/api.js"></script>
+    <script src="./js/parser.js"></script>
+    <script src="./js/ui.js"></script>
+    <script src="./js/claude-line-fixer.js"></script>
     
-    <!-- Vue.js & ESモジュール -->
+    <!-- Vue.js -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <script type="module" src="js/main.js"></script>
+    
+    <!-- メインスクリプト (非モジュール版) -->
+    <script src="./js/main.js"></script>
+    
+    <!-- デバッグスクリプト -->
+    <script>
+    // デバッグと診断の初期化
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('アプリケーション診断を開始...');
+        
+        // モジュールの存在確認
+        const modules = [
+            { name: 'Config', obj: window.Config },
+            { name: 'DBStorage', obj: window.DBStorage },
+            { name: 'EnhancedDBStorage', obj: window.EnhancedDBStorage },
+            { name: 'FileHelper', obj: window.FileHelper },
+            { name: 'LogParser', obj: window.LogParser },
+            { name: 'API', obj: window.API },
+            { name: 'UI', obj: window.UI },
+            { name: 'ClaudeLineFixer', obj: window.ClaudeLineFixer }
+        ];
+        
+        console.log('==== モジュール読み込みチェック ====');
+        let allLoaded = true;
+        modules.forEach(module => {
+            const loaded = !!module.obj;
+            console.log(`${module.name}: ${loaded ? '読み込み済み ✓' : '読み込みエラー ✗'}`);
+            allLoaded = allLoaded && loaded;
+        });
+        
+        console.log(`モジュール読み込み状態: ${allLoaded ? '全て成功' : '一部失敗'}`);
+        
+        // ファイルパスのテスト
+        console.log('==== ファイルパス操作テスト ====');
+        if (window.FileHelper) {
+            try {
+                const testPath = "E:\\Desktop\\ClaudeCode\\claude-line\\example.json";
+                console.log('元のパス:', testPath);
+                console.log('ファイル名:', window.FileHelper.getFilenameFromPath(testPath));
+                console.log('拡張子:', window.FileHelper.getFileExtension("example.json"));
+                console.log('ディレクトリ:', window.FileHelper.getDirectoryPath(testPath));
+                console.log('FileHelper 基本機能テスト成功 ✓');
+            } catch (error) {
+                console.error('FileHelper テストエラー:', error);
+            }
+        }
+        
+        // 診断情報を収集
+        if (window.ClaudeLineFixer) {
+            const diagnostics = window.ClaudeLineFixer.getDiagnostics();
+            console.log('==== システム診断結果 ====');
+            console.log('状態:', diagnostics.status);
+            console.log('エラー:', diagnostics.errors.length > 0 ? diagnostics.errors : 'なし');
+            console.log('警告:', diagnostics.warnings.length > 0 ? diagnostics.warnings : 'なし');
+            console.log('修正:', diagnostics.fixes.length > 0 ? diagnostics.fixes : 'なし');
+        }
+        
+        // グローバルデバッグ関数
+        window.debugApp = {
+            testFileHelper: function() {
+                if (!window.FileHelper) {
+                    console.error('FileHelperモジュールが見つかりません');
+                    return false;
+                }
+                // 基本機能テスト
+                return this.testFileOperations();
+            },
+            
+            testFileOperations: function() {
+                try {
+                    const testPaths = [
+                        "E:\\Desktop\\ClaudeCode\\claude-line\\example.json",
+                        "/var/www/html/claude-line/log.txt",
+                        "C:/Users/username/Documents/chat.html"
+                    ];
+                    
+                    console.log('==== ファイル操作テスト ====');
+                    testPaths.forEach(path => {
+                        const filename = window.FileHelper.getFilenameFromPath(path);
+                        const ext = window.FileHelper.getFileExtension(filename);
+                        const dir = window.FileHelper.getDirectoryPath(path);
+                        
+                        console.log(`パス: ${path}`);
+                        console.log(`  - ファイル名: ${filename}`);
+                        console.log(`  - 拡張子: ${ext}`);
+                        console.log(`  - ディレクトリ: ${dir}`);
+                        console.log('---');
+                    });
+                    
+                    console.log('テスト完了 ✓');
+                    return true;
+                } catch (error) {
+                    console.error('ファイル操作テストエラー:', error);
+                    return false;
+                }
+            },
+            
+            toggleDebug: function() {
+                if (window.Config && window.Config.debug && window.Config.debug.toggleMode) {
+                    return window.Config.debug.toggleMode();
+                } else {
+                    console.warn('デバッグ機能が利用できません');
+                    return false;
+                }
+            }
+        };
+        
+        console.log('診断完了。window.debugApp からデバッグ機能を利用できます。');
+    });
+    </script>
 </body>
 </html>
