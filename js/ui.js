@@ -1,6 +1,7 @@
 /**
  * ui.js
  * ユーザーインターフェースを管理するモジュール
+ * v2: 3ペインレイアウトとタブ切り替え機能に対応
  */
 
 const UIModule = (() => {
@@ -19,16 +20,28 @@ const UIModule = (() => {
             // イベントリスナーを設定
             setupEventListeners();
             
+            // タブ切り替え機能を初期化
+            initTabSwitching();
+            
             // 会話リストを読み込む
             loadConversationList();
             
             // テーマを適用
             applyTheme(Config.getConfig('ui.theme') || 'light');
             
+            // 設定を読み込んでフォームに表示
+            loadSettingsToForm();
+            
             console.log('UIモジュールが初期化されました');
             return true;
         } catch (error) {
             console.error('UIモジュールの初期化中にエラーが発生しました:', error);
+            
+            // エラーをデバッグログに記録
+            if (window.Config && window.Config.debug) {
+                window.Config.debug.log('UI', 'UIモジュールの初期化に失敗しました', error);
+            }
+            
             return false;
         }
     };
@@ -36,25 +49,37 @@ const UIModule = (() => {
     // DOM要素を取得してキャッシュ
     const cacheElements = () => {
         elements = {
+            // メインエリア
+            appContainer: document.querySelector('.app-container'),
             conversationList: document.getElementById('conversation-list'),
             messageContainer: document.getElementById('message-container'),
             messageInput: document.getElementById('message-input'),
             sendMessageBtn: document.getElementById('send-message-btn'),
+            
+            // ナビゲーションとタブ
+            navItems: document.querySelectorAll('.nav-item'),
+            tabContents: document.querySelectorAll('.tab-content'),
+            
+            // ファイル操作
             loadLogBtn: document.getElementById('load-log-btn'),
             logFileInput: document.getElementById('log-file-input'),
-            settingsBtn: document.getElementById('settings-btn'),
-            settingsModal: document.getElementById('settings-modal'),
-            saveSettingsBtn: document.getElementById('save-settings-btn'),
+            
+            // 設定関連
             apiKeyInput: document.getElementById('api-key'),
             modelSelection: document.getElementById('model-selection'),
             themeButtons: document.querySelectorAll('.theme-btn'),
+            logDirectory: document.getElementById('log-directory'),
+            browseDirectoryBtn: document.getElementById('browse-directory-btn'),
+            saveSettingsBtn: document.getElementById('save-settings-btn'),
+            
+            // 会話コントロール
             currentConversationTitle: document.getElementById('current-conversation-title'),
             editTitleBtn: document.getElementById('edit-title-btn'),
             exportBtn: document.getElementById('export-btn'),
             clearBtn: document.getElementById('clear-btn'),
             conversationSearch: document.getElementById('conversation-search'),
-            logDirectory: document.getElementById('log-directory'),
-            browseDirectoryBtn: document.getElementById('browse-directory-btn'),
+            
+            // モーダル
             fileBrowserModal: document.getElementById('file-browser-modal'),
             currentDirectoryPath: document.getElementById('current-directory-path'),
             fileList: document.getElementById('file-list'),
@@ -83,8 +108,7 @@ const UIModule = (() => {
         
         elements.logFileInput.addEventListener('change', handleLogFileSelect);
         
-        // 設定モーダル
-        elements.settingsBtn.addEventListener('click', openSettingsModal);
+        // 設定保存
         elements.saveSettingsBtn.addEventListener('click', saveSettings);
         
         // テーマ切り替え
@@ -122,6 +146,69 @@ const UIModule = (() => {
                 closeModal(modal);
             });
         });
+        
+        // 入力エリアの自動リサイズ
+        elements.messageInput.addEventListener('input', () => {
+            autoResizeTextarea(elements.messageInput);
+        });
+        
+        // キーボードショートカット
+        document.addEventListener('keydown', (e) => {
+            // Ctrl+S: エクスポート
+            if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                exportCurrentConversation();
+            }
+            
+            // Ctrl+N: 新しい会話
+            if (e.ctrlKey && e.key === 'n') {
+                e.preventDefault();
+                clearMessages();
+            }
+            
+            // Ctrl+O: ログ読み込み
+            if (e.ctrlKey && e.key === 'o') {
+                e.preventDefault();
+                elements.loadLogBtn.click();
+            }
+        });
+    };
+    
+    // タブ切り替え機能を初期化
+    const initTabSwitching = () => {
+        elements.navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                // アクティブなタブクラスを削除
+                elements.navItems.forEach(navItem => {
+                    navItem.classList.remove('active');
+                });
+                
+                elements.tabContents.forEach(tabContent => {
+                    tabContent.classList.remove('active');
+                });
+                
+                // クリックされたタブをアクティブに
+                item.classList.add('active');
+                
+                // 対応するコンテンツをアクティブに
+                const tabId = item.getAttribute('data-tab') + '-tab';
+                const targetTab = document.getElementById(tabId);
+                if (targetTab) {
+                    targetTab.classList.add('active');
+                }
+                
+                // デバッグログに記録
+                if (window.Config && window.Config.debug) {
+                    window.Config.debug.log('UI', `タブを切り替えました: ${item.getAttribute('data-tab')}`);
+                }
+            });
+        });
+    };
+    
+    // テキストエリアを自動リサイズ
+    const autoResizeTextarea = (textarea) => {
+        textarea.style.height = 'auto';
+        textarea.style.height = (textarea.scrollHeight) + 'px';
     };
     
     // メッセージを送信
@@ -132,6 +219,7 @@ const UIModule = (() => {
         try {
             // 入力欄をクリア
             elements.messageInput.value = '';
+            elements.messageInput.style.height = 'auto';
             
             // ユーザーメッセージをUIに追加
             appendMessage({
@@ -168,19 +256,43 @@ const UIModule = (() => {
                 
                 // Claudeの応答をUIに追加
                 appendMessage(result.claudeResponse);
+                
+                // グローバルアプリ状態を更新
+                if (window.App) {
+                    window.App.updateCurrentConversation(currentConversationId);
+                }
             }
             
             // ローディングインジケータを非表示
             hideLoadingIndicator();
+            
+            // デバッグログに記録
+            if (window.Config && window.Config.debug) {
+                window.Config.debug.log('UI', 'メッセージを送信しました', {
+                    conversationId: currentConversationId,
+                    messageText: messageText.substring(0, 50) + (messageText.length > 50 ? '...' : '')
+                });
+            }
         } catch (error) {
             console.error('メッセージ送信中にエラーが発生しました:', error);
             showToast('エラー', error.message, 'error');
             hideLoadingIndicator();
+            
+            // デバッグログに記録
+            if (window.Config && window.Config.debug) {
+                window.Config.debug.log('UI', 'メッセージ送信中にエラーが発生しました', error);
+            }
         }
     };
     
     // メッセージをUIに追加
     const appendMessage = (message) => {
+        // ウェルカムメッセージがあれば削除
+        const welcomeMessage = elements.messageContainer.querySelector('.welcome-message');
+        if (welcomeMessage) {
+            welcomeMessage.remove();
+        }
+        
         const messageElement = document.createElement('div');
         messageElement.className = `message ${message.role === 'user' ? 'user-message' : 'claude-message'}`;
         
@@ -311,10 +423,30 @@ const UIModule = (() => {
             // 会話を表示
             loadConversation(result.conversationId);
             
+            // 会話タブをアクティブに
+            const conversationsTab = document.querySelector('.nav-item[data-tab="conversations"]');
+            if (conversationsTab) {
+                conversationsTab.click();
+            }
+            
             showToast('成功', `${parsedData.messages.length}件のメッセージをインポートしました`, 'success');
+            
+            // デバッグログに記録
+            if (window.Config && window.Config.debug) {
+                window.Config.debug.log('UI', 'ログファイルを読み込みました', {
+                    filename: file.name,
+                    messageCount: parsedData.messages.length,
+                    conversationId: result.conversationId
+                });
+            }
         } catch (error) {
             console.error('ログファイルの読み込み中にエラーが発生しました:', error);
             showToast('エラー', error.message, 'error');
+            
+            // デバッグログに記録
+            if (window.Config && window.Config.debug) {
+                window.Config.debug.log('UI', 'ログファイルの読み込みに失敗しました', error);
+            }
         } finally {
             // ファイル入力をリセット
             event.target.value = '';
@@ -355,9 +487,21 @@ const UIModule = (() => {
             
             // 現在の会話をハイライト
             highlightCurrentConversation();
+            
+            // デバッグログに記録
+            if (window.Config && window.Config.debug) {
+                window.Config.debug.log('UI', '会話リストを読み込みました', {
+                    count: conversations.length
+                });
+            }
         } catch (error) {
             console.error('会話リストの読み込み中にエラーが発生しました:', error);
             showToast('エラー', '会話リストを読み込めませんでした', 'error');
+            
+            // デバッグログに記録
+            if (window.Config && window.Config.debug) {
+                window.Config.debug.log('UI', '会話リストの読み込みに失敗しました', error);
+            }
         }
     };
     
@@ -388,6 +532,11 @@ const UIModule = (() => {
             // 現在の会話IDを更新
             currentConversationId = conversationId;
             
+            // グローバルアプリ状態を更新
+            if (window.App) {
+                window.App.updateCurrentConversation(currentConversationId);
+            }
+            
             // タイトルを更新
             updateConversationTitle(conversation.title);
             
@@ -404,9 +553,29 @@ const UIModule = (() => {
             
             // 会話リストで現在の会話をハイライト
             highlightCurrentConversation();
+            
+            // 会話タブをアクティブに
+            const conversationsTab = document.querySelector('.nav-item[data-tab="conversations"]');
+            if (conversationsTab) {
+                conversationsTab.click();
+            }
+            
+            // デバッグログに記録
+            if (window.Config && window.Config.debug) {
+                window.Config.debug.log('UI', '会話を読み込みました', {
+                    conversationId,
+                    title: conversation.title,
+                    messageCount: messages.length
+                });
+            }
         } catch (error) {
             console.error('会話の読み込み中にエラーが発生しました:', error);
             showToast('エラー', error.message, 'error');
+            
+            // デバッグログに記録
+            if (window.Config && window.Config.debug) {
+                window.Config.debug.log('UI', '会話の読み込みに失敗しました', error);
+            }
         }
     };
     
@@ -424,6 +593,17 @@ const UIModule = (() => {
         const currentItem = elements.conversationList.querySelector(`.conversation-item[data-id="${currentConversationId}"]`);
         if (currentItem) {
             currentItem.classList.add('active');
+            
+            // 必要に応じてスクロール
+            const listContainer = elements.conversationList;
+            const itemTop = currentItem.offsetTop;
+            const itemHeight = currentItem.offsetHeight;
+            const containerHeight = listContainer.offsetHeight;
+            const scrollTop = listContainer.scrollTop;
+            
+            if (itemTop < scrollTop || itemTop + itemHeight > scrollTop + containerHeight) {
+                listContainer.scrollTop = itemTop - containerHeight / 2 + itemHeight / 2;
+            }
         }
     };
     
@@ -460,9 +640,23 @@ const UIModule = (() => {
                 await loadConversationList();
                 
                 showToast('成功', 'タイトルを更新しました', 'success');
+                
+                // デバッグログに記録
+                if (window.Config && window.Config.debug) {
+                    window.Config.debug.log('UI', '会話タイトルを更新しました', {
+                        conversationId: currentConversationId,
+                        oldTitle: currentTitle,
+                        newTitle
+                    });
+                }
             } catch (error) {
                 console.error('タイトルの更新中にエラーが発生しました:', error);
                 showToast('エラー', error.message, 'error');
+                
+                // デバッグログに記録
+                if (window.Config && window.Config.debug) {
+                    window.Config.debug.log('UI', 'タイトルの更新に失敗しました', error);
+                }
             }
         }
     };
@@ -493,9 +687,22 @@ const UIModule = (() => {
             URL.revokeObjectURL(url);
             
             showToast('成功', '会話をエクスポートしました', 'success');
+            
+            // デバッグログに記録
+            if (window.Config && window.Config.debug) {
+                window.Config.debug.log('UI', '会話をエクスポートしました', {
+                    conversationId: currentConversationId,
+                    messageCount: exportData.messages.length
+                });
+            }
         } catch (error) {
             console.error('会話のエクスポート中にエラーが発生しました:', error);
             showToast('エラー', error.message, 'error');
+            
+            // デバッグログに記録
+            if (window.Config && window.Config.debug) {
+                window.Config.debug.log('UI', '会話のエクスポートに失敗しました', error);
+            }
         }
     };
     
@@ -505,8 +712,21 @@ const UIModule = (() => {
             // メッセージコンテナをクリア
             elements.messageContainer.innerHTML = '';
             
+            // ウェルカムメッセージを追加
+            elements.messageContainer.innerHTML = `
+                <div class="welcome-message">
+                    <h2>Claude LINE Chat へようこそ</h2>
+                    <p>左側のメニューから「ログ読込」をクリックして会話ログを読み込むか、下の入力欄からメッセージを入力して新しい会話を開始してください。</p>
+                </div>
+            `;
+            
             // 現在の会話IDをリセット
             currentConversationId = null;
+            
+            // グローバルアプリ状態を更新
+            if (window.App) {
+                window.App.updateCurrentConversation(null);
+            }
             
             // タイトルを更新
             updateConversationTitle('新しい会話');
@@ -516,6 +736,11 @@ const UIModule = (() => {
             conversationItems.forEach(item => {
                 item.classList.remove('active');
             });
+            
+            // デバッグログに記録
+            if (window.Config && window.Config.debug) {
+                window.Config.debug.log('UI', '会話をクリアしました');
+            }
         }
     };
     
@@ -561,26 +786,58 @@ const UIModule = (() => {
             
             // 現在の会話をハイライト
             highlightCurrentConversation();
+            
+            // 検索結果を表示
+            if (searchText) {
+                showToast('情報', `${conversations.length}件の会話が見つかりました`, 'info');
+            }
+            
+            // デバッグログに記録
+            if (window.Config && window.Config.debug) {
+                window.Config.debug.log('UI', '会話を検索しました', {
+                    searchText,
+                    resultCount: conversations.length
+                });
+            }
         } catch (error) {
             console.error('会話の検索中にエラーが発生しました:', error);
             showToast('エラー', error.message, 'error');
+            
+            // デバッグログに記録
+            if (window.Config && window.Config.debug) {
+                window.Config.debug.log('UI', '会話の検索に失敗しました', error);
+            }
         }
     };
     
-    // 設定モーダルを開く
-    const openSettingsModal = () => {
-        // 現在の設定を取得
-        const apiSettings = API.getSettings();
-        
-        // フォームに設定を反映
-        elements.apiKeyInput.value = apiSettings.key || '';
-        elements.modelSelection.value = apiSettings.model || 'claude-3-opus-20240229';
-        
-        // ログディレクトリの設定を取得
-        elements.logDirectory.value = localStorage.getItem('last_log_directory') || '';
-        
-        // モーダルを表示
-        openModal(elements.settingsModal);
+    // 設定をフォームに読み込む
+    const loadSettingsToForm = () => {
+        try {
+            // APIキーと選択されたモデルを取得
+            const apiSettings = API.getSettings();
+            elements.apiKeyInput.value = apiSettings.key || '';
+            elements.modelSelection.value = apiSettings.model || 'claude-3-opus-20240229';
+            
+            // ログディレクトリを取得
+            const logDirectory = localStorage.getItem('last_log_directory') || '';
+            elements.logDirectory.value = logDirectory;
+            
+            // テーマを設定
+            const theme = Config.getConfig('ui.theme') || 'light';
+            applyTheme(theme);
+            
+            // デバッグログに記録
+            if (window.Config && window.Config.debug) {
+                window.Config.debug.log('UI', '設定をフォームに読み込みました');
+            }
+        } catch (error) {
+            console.error('設定のフォームへの読み込み中にエラーが発生しました:', error);
+            
+            // デバッグログに記録
+            if (window.Config && window.Config.debug) {
+                window.Config.debug.log('UI', '設定のフォームへの読み込みに失敗しました', error);
+            }
+        }
     };
     
     // 設定を保存
@@ -604,13 +861,30 @@ const UIModule = (() => {
                 localStorage.setItem('last_log_directory', logDirectory);
             }
             
-            // モーダルを閉じる
-            closeModal(elements.settingsModal);
+            // 会話タブをアクティブに
+            const conversationsTab = document.querySelector('.nav-item[data-tab="conversations"]');
+            if (conversationsTab) {
+                conversationsTab.click();
+            }
             
             showToast('成功', '設定を保存しました', 'success');
+            
+            // デバッグログに記録
+            if (window.Config && window.Config.debug) {
+                window.Config.debug.log('UI', '設定を保存しました', {
+                    model,
+                    hasApiKey: !!apiKey,
+                    logDirectory
+                });
+            }
         } catch (error) {
             console.error('設定の保存中にエラーが発生しました:', error);
             showToast('エラー', error.message, 'error');
+            
+            // デバッグログに記録
+            if (window.Config && window.Config.debug) {
+                window.Config.debug.log('UI', '設定の保存に失敗しました', error);
+            }
         }
     };
     
@@ -622,6 +896,16 @@ const UIModule = (() => {
         
         // 設定を保存
         Config.updateConfig('ui.theme', theme);
+        
+        // テーマボタンのアクティブ状態を更新
+        elements.themeButtons.forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.theme === theme);
+        });
+        
+        // デバッグログに記録
+        if (window.Config && window.Config.debug) {
+            window.Config.debug.log('UI', 'テーマを適用しました', { theme });
+        }
     };
     
     // ディレクトリを参照
@@ -663,12 +947,33 @@ const UIModule = (() => {
                 
                 // モーダルを表示
                 openModal(elements.fileBrowserModal);
+                
+                // デバッグログに記録
+                if (window.Config && window.Config.debug) {
+                    window.Config.debug.log('UI', 'ディレクトリを参照しました', {
+                        directory: result.directory,
+                        entryCount: result.entries.length
+                    });
+                }
+            } else if (result.cancelled) {
+                // ユーザーによるキャンセル
+                console.log('ディレクトリ選択がキャンセルされました');
             } else {
                 showToast('エラー', result.error, 'error');
+                
+                // デバッグログに記録
+                if (window.Config && window.Config.debug) {
+                    window.Config.debug.log('UI', 'ディレクトリの参照に失敗しました', result);
+                }
             }
         } catch (error) {
             console.error('ディレクトリの参照中にエラーが発生しました:', error);
             showToast('エラー', error.message, 'error');
+            
+            // デバッグログに記録
+            if (window.Config && window.Config.debug) {
+                window.Config.debug.log('UI', 'ディレクトリの参照中にエラーが発生しました', error);
+            }
         }
     };
     
@@ -692,6 +997,13 @@ const UIModule = (() => {
             
             // モーダルを閉じる
             closeModal(elements.fileBrowserModal);
+            
+            // デバッグログに記録
+            if (window.Config && window.Config.debug) {
+                window.Config.debug.log('UI', 'ファイルを選択しました', {
+                    path: fullPath
+                });
+            }
         } else {
             showToast('エラー', 'ファイルが選択されていません', 'error');
         }
@@ -758,6 +1070,15 @@ const UIModule = (() => {
                 toast.remove();
             }, 300);
         }, 5000);
+        
+        // デバッグログに記録
+        if (window.Config && window.Config.debug) {
+            window.Config.debug.log('UI', 'トースト通知を表示しました', {
+                title,
+                message,
+                type
+            });
+        }
     };
     
     // 公開API
@@ -768,7 +1089,7 @@ const UIModule = (() => {
         appendMessage,
         showToast,
         applyTheme,
-        openSettingsModal,
+        openModal,
         closeModal
     };
 })();
