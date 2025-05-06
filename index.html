@@ -11,20 +11,40 @@
 </head>
 <body>
     <div id="app" class="app-container">
-        <div class="sidebar">
-            <div class="sidebar-header">
+        <!-- 左サイドバー（ナビゲーション） -->
+        <div class="left-sidebar">
+            <div class="left-sidebar-header">
                 <h1>Claude LINE Chat</h1>
-                <div class="file-controls">
-                    <button id="load-log-btn" class="line-btn">
-                        <i class="fas fa-folder-open"></i> ログ読込
-                    </button>
-                    <input type="file" id="log-file-input" accept=".html,.json,.txt" style="display: none;">
-                    <button id="settings-btn" class="line-btn">
-                        <i class="fas fa-cog"></i> 設定
-                    </button>
+            </div>
+            <div class="nav-menu">
+                <div class="nav-item active" data-tab="conversations">
+                    <i class="fas fa-comments"></i>
+                    <span>会話</span>
+                </div>
+                <div class="nav-item" data-tab="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>設定</span>
+                </div>
+                <div class="nav-item" data-tab="help">
+                    <i class="fas fa-question-circle"></i>
+                    <span>ヘルプ</span>
                 </div>
             </div>
-            <div class="conversation-list-container">
+        </div>
+        
+        <!-- 中央サイドバー（会話リスト/設定/ヘルプ） -->
+        <div class="center-sidebar">
+            <!-- 会話リストタブ -->
+            <div class="tab-content active" id="conversations-tab">
+                <div class="center-sidebar-header">
+                    <h2>会話</h2>
+                    <div class="file-controls">
+                        <button id="load-log-btn" class="line-btn">
+                            <i class="fas fa-folder-open"></i> ログ読込
+                        </button>
+                        <input type="file" id="log-file-input" accept=".html,.json,.txt" style="display: none;">
+                    </div>
+                </div>
                 <div class="conversation-filter">
                     <input type="text" id="conversation-search" placeholder="会話を検索...">
                 </div>
@@ -32,8 +52,89 @@
                     <!-- 会話リストはJSで動的に生成 -->
                 </div>
             </div>
+            
+            <!-- 設定タブ -->
+            <div class="tab-content" id="settings-tab">
+                <div class="center-sidebar-header">
+                    <h2>設定</h2>
+                </div>
+                <div class="settings-container">
+                    <div class="settings-form">
+                        <div class="setting-group">
+                            <label for="api-key">Claude API Key:</label>
+                            <div class="input-with-button">
+                                <input type="password" id="api-key" placeholder="sk-xxxxxxxxxxxxxxxxxxxxxxxx">
+                                <button id="toggle-api-key" class="icon-btn">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="setting-group">
+                            <label for="model-selection">モデル:</label>
+                            <select id="model-selection">
+                                <option value="claude-3-opus-20240229">Claude 3 Opus</option>
+                                <option value="claude-3-sonnet-20240229">Claude 3 Sonnet</option>
+                                <option value="claude-3-haiku-20240307">Claude 3 Haiku</option>
+                                <option value="claude-3.5-sonnet-20240620">Claude 3.5 Sonnet</option>
+                                <option value="claude-3.7-sonnet-20250219">Claude 3.7 Sonnet</option>
+                            </select>
+                        </div>
+                        <div class="setting-group">
+                            <label>テーマ:</label>
+                            <div class="theme-options">
+                                <button class="theme-btn" data-theme="light">ライト</button>
+                                <button class="theme-btn" data-theme="dark">ダーク</button>
+                            </div>
+                        </div>
+                        <div class="setting-group">
+                            <label for="log-directory">Claudeログディレクトリ:</label>
+                            <div class="input-with-button">
+                                <input type="text" id="log-directory" placeholder="例: E:/Desktop/ClaudeCode/claude-line">
+                                <button id="browse-directory-btn" class="line-btn">参照</button>
+                            </div>
+                        </div>
+                        <button id="save-settings-btn" class="line-btn primary">保存</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ヘルプタブ -->
+            <div class="tab-content" id="help-tab">
+                <div class="center-sidebar-header">
+                    <h2>ヘルプ</h2>
+                </div>
+                <div class="help-container">
+                    <h3>Claude LINE Chat について</h3>
+                    <p>このアプリケーションは、Claudeの会話ログを読み込み、その会話を引き継いで対話できるAIチャットツールです。</p>
+                    
+                    <h3>基本的な使い方</h3>
+                    <ul>
+                        <li><strong>ログ読込</strong>: Claudeの会話ログファイルを読み込みます</li>
+                        <li><strong>会話選択</strong>: 左側のリストから会話を選択して表示します</li>
+                        <li><strong>メッセージ送信</strong>: 下部の入力欄にメッセージを入力して送信します</li>
+                    </ul>
+                    
+                    <h3>設定</h3>
+                    <ul>
+                        <li><strong>API Key</strong>: Claude APIを利用するためのキーを設定します</li>
+                        <li><strong>モデル</strong>: 使用するClaudeのモデルを選択します</li>
+                        <li><strong>テーマ</strong>: ライト/ダークモードを切り替えます</li>
+                        <li><strong>ログディレクトリ</strong>: Claudeのログファイルがあるフォルダを設定します</li>
+                    </ul>
+                    
+                    <h3>キーボードショートカット</h3>
+                    <ul>
+                        <li><strong>Ctrl+S</strong>: 現在の会話をエクスポート</li>
+                        <li><strong>Ctrl+N</strong>: 新しい会話を開始</li>
+                        <li><strong>Ctrl+O</strong>: ログファイルを開く</li>
+                        <li><strong>Enter</strong>: メッセージを送信</li>
+                        <li><strong>Shift+Enter</strong>: 改行</li>
+                    </ul>
+                </div>
+            </div>
         </div>
         
+        <!-- メインコンテンツ（チャット画面） -->
         <div class="main-content">
             <div class="chat-container">
                 <div class="chat-header">
@@ -55,6 +156,10 @@
                 
                 <div id="message-container" class="message-container">
                     <!-- メッセージはJSで動的に生成 -->
+                    <div class="welcome-message">
+                        <h2>Claude LINE Chat へようこそ</h2>
+                        <p>左側のメニューから「ログ読込」をクリックして会話ログを読み込むか、下の入力欄からメッセージを入力して新しい会話を開始してください。</p>
+                    </div>
                 </div>
                 
                 <div class="message-input-container">
@@ -68,42 +173,6 @@
     </div>
 
     <!-- モーダルダイアログ -->
-    <div id="settings-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-modal">&times;</span>
-            <h2>設定</h2>
-            <div class="settings-form">
-                <div class="setting-group">
-                    <label for="api-key">Claude API Key:</label>
-                    <input type="password" id="api-key" placeholder="sk-xxxxxxxxxxxxxxxxxxxxxxxx">
-                </div>
-                <div class="setting-group">
-                    <label for="model-selection">モデル:</label>
-                    <select id="model-selection">
-                        <option value="claude-3-opus-20240229">Claude 3 Opus</option>
-                        <option value="claude-3-sonnet-20240229">Claude 3 Sonnet</option>
-                        <option value="claude-3-haiku-20240307">Claude 3 Haiku</option>
-                        <option value="claude-3.5-sonnet-20240620">Claude 3.5 Sonnet</option>
-                        <option value="claude-3.7-sonnet-20250219">Claude 3.7 Sonnet</option>
-                    </select>
-                </div>
-                <div class="setting-group">
-                    <label>テーマ:</label>
-                    <div class="theme-options">
-                        <button class="theme-btn" data-theme="light">ライト</button>
-                        <button class="theme-btn" data-theme="dark">ダーク</button>
-                    </div>
-                </div>
-                <div class="setting-group">
-                    <label for="log-directory">Claudeログディレクトリ:</label>
-                    <input type="text" id="log-directory" placeholder="例: E:/Desktop/ClaudeCode/claude-line">
-                    <button id="browse-directory-btn" class="line-btn">参照...</button>
-                </div>
-                <button id="save-settings-btn" class="line-btn primary">保存</button>
-            </div>
-        </div>
-    </div>
-
     <div id="file-browser-modal" class="modal">
         <div class="modal-content">
             <span class="close-modal">&times;</span>
@@ -168,6 +237,9 @@
         
         console.log(`モジュール読み込み状態: ${allLoaded ? '全て成功' : '一部失敗'}`);
         
+        // タブ切り替え機能の初期化
+        initTabs();
+        
         // ファイルパスのテスト
         console.log('==== ファイルパス操作テスト ====');
         if (window.FileHelper) {
@@ -193,58 +265,44 @@
             console.log('修正:', diagnostics.fixes.length > 0 ? diagnostics.fixes : 'なし');
         }
         
-        // グローバルデバッグ関数
-        window.debugApp = {
-            testFileHelper: function() {
-                if (!window.FileHelper) {
-                    console.error('FileHelperモジュールが見つかりません');
-                    return false;
-                }
-                // 基本機能テスト
-                return this.testFileOperations();
-            },
-            
-            testFileOperations: function() {
-                try {
-                    const testPaths = [
-                        "E:\\Desktop\\ClaudeCode\\claude-line\\example.json",
-                        "/var/www/html/claude-line/log.txt",
-                        "C:/Users/username/Documents/chat.html"
-                    ];
-                    
-                    console.log('==== ファイル操作テスト ====');
-                    testPaths.forEach(path => {
-                        const filename = window.FileHelper.getFilenameFromPath(path);
-                        const ext = window.FileHelper.getFileExtension(filename);
-                        const dir = window.FileHelper.getDirectoryPath(path);
-                        
-                        console.log(`パス: ${path}`);
-                        console.log(`  - ファイル名: ${filename}`);
-                        console.log(`  - 拡張子: ${ext}`);
-                        console.log(`  - ディレクトリ: ${dir}`);
-                        console.log('---');
-                    });
-                    
-                    console.log('テスト完了 ✓');
-                    return true;
-                } catch (error) {
-                    console.error('ファイル操作テストエラー:', error);
-                    return false;
-                }
-            },
-            
-            toggleDebug: function() {
-                if (window.Config && window.Config.debug && window.Config.debug.toggleMode) {
-                    return window.Config.debug.toggleMode();
-                } else {
-                    console.warn('デバッグ機能が利用できません');
-                    return false;
-                }
-            }
-        };
+        // APIキー表示切り替え
+        const toggleApiKeyBtn = document.getElementById('toggle-api-key');
+        const apiKeyInput = document.getElementById('api-key');
+        if (toggleApiKeyBtn && apiKeyInput) {
+            toggleApiKeyBtn.addEventListener('click', () => {
+                const type = apiKeyInput.type;
+                apiKeyInput.type = type === 'password' ? 'text' : 'password';
+                toggleApiKeyBtn.innerHTML = apiKeyInput.type === 'password' ? 
+                    '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+            });
+        }
         
         console.log('診断完了。window.debugApp からデバッグ機能を利用できます。');
     });
+    
+    // タブ切り替え機能
+    function initTabs() {
+        const navItems = document.querySelectorAll('.nav-item');
+        const tabContents = document.querySelectorAll('.tab-content');
+        
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                // アクティブクラスを全て削除
+                navItems.forEach(navItem => navItem.classList.remove('active'));
+                tabContents.forEach(tabContent => tabContent.classList.remove('active'));
+                
+                // クリックされた項目にアクティブクラスを追加
+                item.classList.add('active');
+                
+                // 対応するタブコンテンツをアクティブに
+                const tabId = item.getAttribute('data-tab') + '-tab';
+                const targetTab = document.getElementById(tabId);
+                if (targetTab) {
+                    targetTab.classList.add('active');
+                }
+            });
+        });
+    }
     </script>
 </body>
 </html>
